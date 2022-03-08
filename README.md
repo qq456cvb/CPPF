@@ -29,13 +29,17 @@ CVPR 2022
  
   CPPF is a pure sim-to-real method that achieves 9D pose estimation in the wild. Our model is trained solely on ShapeNet synthetic models (without any real-world background pasting), and could be directly applied to real-world scenarios (i.e., NOCS REAL275, SUN RGB-D, etc.). CPPF achieves the goal by using only local $SE3$-invariant geometric features, and leverages a bottom-up voting scheme, which is quite different from previous end-to-end learning methods. Our model is robust to noise, and can obtain decent predictions even if only bounding box masks are provided.
   
-# News
-  
+# Contents
+- [Overview](#overview)
+- [Installation](#installation)
+- [Train on ShapeNet Objects](#train-on-shapenet-objects)
+- [Pretrained Models](#pretrained-models)
+- [Test on NOCS REAL275](#test-on-nocs-real275)
+- [Test on SUN RGB-D](#test-on-sun-rgb-d)
+- [Train on Your Own Object Collections](#train-on-your-own-object-collections)
 # Overview
 
 This is the official code implementation of CPPF, including both training and testing. Inference on custom datasets is also supported.
-
-## 
   
 # Installation
 You can run the following command to setup an environment, tested on Ubuntu 16.04:
@@ -46,4 +50,29 @@ conda install pytorch cudatoolkit=10.2 -c pytorch-lts
 pip install tqdm opencv-python scipy matplotlib open3d==0.12.0 hydra-core pyrender cupy-cuda102 PyOpenGL-accelerate
 CXX=g++-7 CC=gcc-7 pip install MinkowskiEngine==0.5.4 -v
 ```
+We use [Hydra](https://hydra.cc/) configuration system to run scripts.
 Notice that we use pyrender with OSMesa support, you may need to install OSMesa after running ```pip install pyrender```, more details can be found [here](https://pyrender.readthedocs.io/en/latest/install/index.html).
+
+# Train on ShapeNet Objects
+First, download [ShapeNet v2](https://shapenet.org/) dataset and modify the ``shapenet_root`` key in ``config/config.yaml`` to point to the location of the dataset.
+
+To train on synthetic ShapeNet objects that appear in NOCS REAL275, run:
+```
+python train.py category=bottle,bowl,camera,can,laptop,mug -m
+```
+To train on synthetic ShapeNet objects that appear in SUN RGB-D, run:
+```
+python train.py category=bathtub,bed,bookshelf,chair,sofa,table -m
+```
+
+# Pretrained Models
+# Test on NOCS REAL275
+
+## With Instance Segmentation Mask
+
+## With Bounding Box Mask
+
+## Zero-Shot Instance Segmentation and Pose Estimation
+# Test on SUN RGB-D
+
+# Train on Your Own Object Collections
