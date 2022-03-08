@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: False
+regress_right: True
+res: 3e-2
+category: table
+scale_range: [0.027254089050664287, 3.6816547320083073]
+vote_range: [1.2363029403529906, 1.2363029403529906]
+scale_mean: [0.4305247031772566, 0.35199163168896463, 0.6905431275083608]

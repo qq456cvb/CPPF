@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: False
+regress_right: True
+res: 4e-3
+category: camera
+scale_range: [0.1430, 0.2567]
+vote_range: [0.15, 0.15]
+scale_mean: [0.05, 0.05, 0.07]

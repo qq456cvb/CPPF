@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: True
+regress_right: True
+res: 4e-3
+category: mug
+scale_range: [0.1501, 0.1995]
+vote_range: [0.12, 0.12]
+scale_mean: [0.06, 0.05, 0.045]

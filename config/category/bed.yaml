@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: False
+regress_right: True
+res: 3e-2
+category: bed
+scale_range: [1.484997764725992, 4.096944229262802]
+vote_range: [1.860647331329598, 1.860647331329598]
+scale_mean: [1.0274129618644066, 0.49417050423728714, 0.7768076129943503]

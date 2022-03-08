@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: True
+regress_right: True
+res: 3e-2
+category: bookshelf
+scale_range: [0.1640900157049736, 4.339695465933739]
+vote_range: [1.501261827212904, 1.501261827212904]
+scale_mean: [0.2166509734042553, 0.8096084361702133, 0.6821934095744682]

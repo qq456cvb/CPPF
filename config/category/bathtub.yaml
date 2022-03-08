@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: False
+regress_right: True
+res: 3e-2
+category: bathtub
+scale_range: [0.9871392690983584, 2.3263480392772227]
+vote_range: [1.104495769458527, 1.104495769458527]
+scale_mean: [0.3886107936507936, 0.23178569841269842, 0.6773600634920637]

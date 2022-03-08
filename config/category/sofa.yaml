@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: False
+regress_right: True
+res: 3e-2
+category: sofa
+scale_range: [0.7900343820741655, 3.7988801202149647]
+vote_range: [1.5296381674297101, 1.5296381674297101]
+scale_mean: [0.48090147859327237, 0.4228677186544341, 0.9288330076452599]

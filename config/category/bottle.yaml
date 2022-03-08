@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: True
+regress_right: False
+res: 4e-3
+category: bottle
+scale_range: [0.2300, 0.4594]
+vote_range: [0.25, 0.25]
+scale_mean: [0.05, 0.15, 0.05]

@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: True
+regress_right: False
+res: 4e-3
+category: can
+scale_range: [0.128, 0.18]
+vote_range: [0.1, 0.1]
+scale_mean: [0.037, 0.055, 0.037]

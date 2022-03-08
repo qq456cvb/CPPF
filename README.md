@@ -3,7 +3,7 @@ CPPF: Towards Robust Category-Level 9D Pose Estimation in the Wild
 </h1>
 
 <p align='center'>
-<img align="center" src='images/intro.jpg' width='80%'> </img>
+<img align="center" src='images/intro.jpg' width='70%'> </img>
 </p>
 
 <div align="center">
@@ -14,7 +14,7 @@ CPPF: Towards Robust Category-Level 9D Pose Estimation in the Wild
 CVPR 2022
 <br>
 <br>
-<a href='https://qq456cvb.github.io/files/cppf.pdf'>
+<a href='https://arxiv.org/pdf/2203.03089.pdf'>
   <img src='https://img.shields.io/badge/Paper-PDF-orange?style=flat&logo=arxiv&logoColor=orange' alt='Paper PDF'>
 </a>
 <a href='https://qq456cvb.github.io/projects/cppf'>
@@ -38,5 +38,12 @@ This is the official code implementation of CPPF, including both training and te
 ## 
   
 # Installation
+You can run the following command to setup an environment, tested on Ubuntu 16.04:
 
-Code coming soon
+```
+conda create -n cppf python=3.8
+conda install pytorch cudatoolkit=10.2 -c pytorch-lts
+pip install tqdm opencv-python scipy matplotlib open3d==0.12.0 hydra-core pyrender cupy-cuda102 PyOpenGL-accelerate
+CXX=g++-7 CC=gcc-7 pip install MinkowskiEngine==0.5.4 -v
+```
+Notice that we use pyrender with OSMesa support, you may need to install OSMesa after running ```pip install pyrender```, more details can be found [here](https://pyrender.readthedocs.io/en/latest/install/index.html).

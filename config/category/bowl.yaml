@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: False
+regress_right: False
+res: 4e-3
+category: bowl
+scale_range: [0.1851, 0.2381]
+vote_range: [0.12, 0.12]
+scale_mean: [0.07, 0.03, 0.07]

@@ -1,0 +1,8 @@
+# @package _global_
+up_sym: False
+regress_right: True
+res: 3e-2
+category: chair
+scale_range: [0.7999364364268209, 1.559057241958137]
+vote_range: [0.7863312261283193, 0.7863312261283193]
+scale_mean: [0.29636475108453486, 0.4208450279047945, 0.2789450356430997]

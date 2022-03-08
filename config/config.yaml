@@ -1,0 +1,29 @@
+batch_size: 1
+res: 5e-3
+max_epoch: 200
+npoint_max: 10000
+use_normal: True
+regress_right: False
+tr_num_bins: 32
+rot_num_bins: 36
+opt:
+  weight_decay: 0
+  lr: 1e-3
+up_sym: False
+right_sym: False
+z_right: False
+cls_bins: True
+
+defaults:
+  - _self_
+  - category: bowl
+  
+knn: 60
+shapenet_root: ../disk/ShapeNetCore.v2
+
+hydra:
+  run:
+    dir: ./outputs/${category}/
+  sweep:
+    dir: outputs
+    subdir: ${category}
