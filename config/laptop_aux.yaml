@@ -1,0 +1,11 @@
+category: laptop
+max_epoch: 20
+batch_size: 16
+data_root: ./data/laptop
+opt:
+  weight_decay: 0
+  lr: 1e-3
+
+hydra:
+  run:
+    dir: ./checkpoints/${category}_aux/

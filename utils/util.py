@@ -5,7 +5,7 @@ Copyright (c) 2017 Matterport, Inc.
 Licensed under the MIT License (see LICENSE for details)
 Written by Waleed Abdulla
 """
-
+import open3d as o3d
 from copyreg import pickle
 import sys
 import os
@@ -36,6 +36,34 @@ typename2shapenetid = {
     'sofa': '04256520',
     'table': '04379243'
 }
+
+
+def convert_layers(model, layer_type_old, layer_type_new, convert_weights=False):
+    for name, module in reversed(model._modules.items()):
+        if len(list(module.children())) > 0:
+            # recurse
+            model._modules[name] = convert_layers(module, layer_type_old, layer_type_new, convert_weights)
+
+        if type(module) == layer_type_old:
+            layer_old = module
+            layer_new = layer_type_new(module.num_features, module.eps, module.momentum, module.affine,
+                                             module.track_running_stats) 
+
+            if convert_weights == True:
+                layer_new.weight = layer_old.weight
+                layer_new.bias = layer_old.bias
+
+            model._modules[name] = layer_new
+
+    return model
+
+
+def estimate_normals(pc, knn):
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(pc)
+    pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamKNN(knn=knn))
+    return np.array(pcd.normals)
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value
@@ -1017,12 +1045,6 @@ def compute_degree_cm_mAP(final_results, synset_names, log_dir, degree_threshold
     for deg_thresh in degree_thres_list:
         for shift_thres in shift_thres_list:
             print('{} degree, {}cm: {:.1f}'.format(deg_thresh, shift_thres, pose_aps[-1, degree_thres_list.index(deg_thresh), shift_thres_list.index(shift_thres)] * 100))
-    # print('5 degree, 100cm: {:.1f}'.format(pose_aps[-1, degree_thres_list.index(5),shift_thres_list.index(100)] * 100))
-    # print('10 degree, 5cm: {:.1f}'.format(pose_aps[-1, degree_thres_list.index(10),shift_thres_list.index(5)] * 100))
-    # print('10 degree, 10cm: {:.1f}'.format(pose_aps[-1, degree_thres_list.index(10),shift_thres_list.index(10)] * 100))
-    # print('15 degree, 5cm: {:.1f}'.format(pose_aps[-1, degree_thres_list.index(15),shift_thres_list.index(5)] * 100))
-    # print('15 degree, 10cm: {:.1f}'.format(pose_aps[-1, degree_thres_list.index(15),shift_thres_list.index(10)] * 100))
-
 
     return iou_3d_aps, pose_aps, pose_pred_matches, pose_gt_matches
 

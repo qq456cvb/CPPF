@@ -1,6 +1,6 @@
 import cupy as cp
-
-
+import numpy as np
+    
 ppf_kernel = cp.RawKernel(r'''
     #include "/home/neil/ppf_matching/helper_math.cuh"
     #define M_PI 3.14159265358979323846264338327950288

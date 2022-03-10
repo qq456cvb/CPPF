@@ -42,33 +42,64 @@ CVPR 2022
 This is the official code implementation of CPPF, including both training and testing. Inference on custom datasets is also supported.
   
 # Installation
-You can run the following command to setup an environment, tested on Ubuntu 16.04:
+You can run the following command to setup an environment, tested on Ubuntu 18.04:
 
 ```
 conda create -n cppf python=3.8
-conda install pytorch cudatoolkit=10.2 -c pytorch-lts
-pip install tqdm opencv-python scipy matplotlib open3d==0.12.0 hydra-core pyrender cupy-cuda102 PyOpenGL-accelerate
+conda install pytorch torchvision cudatoolkit=10.2 -c pytorch-lts
+pip install tqdm opencv-python scipy matplotlib open3d==0.12.0 hydra-core pyrender cupy-cuda102 PyOpenGL-accelerate OpenEXR
 CXX=g++-7 CC=gcc-7 pip install MinkowskiEngine==0.5.4 -v
 ```
 We use [Hydra](https://hydra.cc/) configuration system to run scripts.
 Notice that we use pyrender with OSMesa support, you may need to install OSMesa after running ```pip install pyrender```, more details can be found [here](https://pyrender.readthedocs.io/en/latest/install/index.html).
 
 # Train on ShapeNet Objects
-First, download [ShapeNet v2](https://shapenet.org/) dataset and modify the ``shapenet_root`` key in ``config/config.yaml`` to point to the location of the dataset.
+<details>
+<summary>Data Preparation</summary>
+
+Download [ShapeNet v2](https://shapenet.org/) dataset and modify the ``shapenet_root`` key in ``config/config.yaml`` to point to the location of the dataset.
+
+</details>
+
+<details>
+<summary>Train on NOCS REAL275 objects</summary>
 
 To train on synthetic ShapeNet objects that appear in NOCS REAL275, run:
 ```
 python train.py category=bottle,bowl,camera,can,laptop,mug -m
 ```
+
+For laptops, an auxiliary segmentation is needed to ensure a unique pose. Please refer to <a href='#laptop-aux'>Auxiliary Segmentation for Laptops</a>/
+</details>
+
+<details>
+<summary>Train on SUN RGB-D objects</summary>
+
 To train on synthetic ShapeNet objects that appear in SUN RGB-D, run:
 ```
 python train.py category=bathtub,bed,bookshelf,chair,sofa,table -m
 ```
+</details>
+
+<details>
+<summary id='laptop-aux'>Auxiliary Segmentation for Laptops</summary>
+
+For Laptops, geometry alone cannot determine the pose unambiguously, we rely on an auxiliary segmentation network that segments out the lid and the keyboard base.
+
+To train the segmenter network, first download our Blender physically rendered laptop images from [Google Drive]() and place it under ``data/laptop``. Then run the following command:
+```
+python train_laptop_aux.py
+```
+</details>
+
 
 # Pretrained Models
 # Test on NOCS REAL275
 
-## With Instance Segmentation Mask
+<details>
+<summary>With Instance Segmentation Mask</summary>
+
+</details>
 
 ## With Bounding Box Mask
 

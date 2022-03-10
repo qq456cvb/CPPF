@@ -7,7 +7,7 @@ regress_right: False
 tr_num_bins: 32
 rot_num_bins: 36
 opt:
-  weight_decay: 0
+  weight_decay: 1e-4
   lr: 1e-3
 up_sym: False
 right_sym: False
@@ -19,11 +19,11 @@ defaults:
   - category: bowl
   
 knn: 60
-shapenet_root: ../disk/ShapeNetCore.v2
+shapenet_root: ./data/ShapeNetCore.v2
 
 hydra:
   run:
-    dir: ./outputs/${category}/
+    dir: ./checkpoints/${category}/
   sweep:
-    dir: outputs
+    dir: checkpoints
     subdir: ${category}

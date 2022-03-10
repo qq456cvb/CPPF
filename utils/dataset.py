@@ -8,6 +8,8 @@ import open3d as o3d
 import trimesh
 import hydra
 import MinkowskiEngine as ME
+from scipy.spatial.transform import Rotation as R
+import OpenEXR
     
 
 def generate_target(pc, pc_normal, up_sym=False, right_sym=False, z_right=False, subsample=200000):
@@ -51,6 +53,14 @@ def generate_target(pc, pc_normal, up_sym=False, right_sym=False, z_right=False,
         np.sum(pairwise_normals * right, -1) > 0
     ], -1).astype(np.float32)
     return target_tr.astype(np.float32).reshape(-1, 2), target_rot.astype(np.float32).reshape(-1, 2), target_rot_aux.reshape(-1, 2), point_idxs.astype(np.int64)
+
+
+def augment_rgb(rgb, bg_color):
+    fg_mask = np.any(rgb != bg_color, -1)
+    rgb[fg_mask] *= (1 + 0.4 * np.random.random(3) - 0.2) # brightness change for each channel
+    rgb[fg_mask] += np.expand_dims((0.05 * np.random.random(rgb[fg_mask].shape[:-1]) - 0.025), -1) # jittering on each pixel
+    rgb[fg_mask] = np.clip(rgb[fg_mask], 0, 1)
+    return rgb
 
 
 # IMPORTANT: nocs coord, 
@@ -239,4 +249,138 @@ class ShapeNetDataset(torch.utils.data.Dataset):
     def __len__(self):
         return min(len(self.model_names), 200)
     
+
+class BlenderLaptopAuxDataset(torch.utils.data.Dataset):
+    def __init__(self, cfg, model_names):
+        super().__init__()
+        self.cfg = cfg
+        self.intrinsics = np.array([[591.0125, 0, 322.525], [0, 590.16775, 244.11084], [0, 0, 1]])
+        
+        self.model_names = []
+        blacklists = open(hydra.utils.to_absolute_path('data/laptop_nonreal.txt')).read().splitlines()
+        for name in model_names:
+            if name not in blacklists:
+                self.model_names.append(name)
+            
+        self.camera_lens = 29.55062484741211
+        self.camera_sensor_width = 32.
+        self.resolution_x = 640
+        self.resolution_y = 480
+    
+    def __len__(self):
+        return len(self.model_names)
+    
+    def backproject(self, depth, mask):
+        sensor_height = self.resolution_y / self.resolution_x * self.camera_sensor_width
+        u, v = np.meshgrid(np.arange(self.resolution_x), np.arange(self.resolution_y))
+        
+        u = u[mask]
+        v = v[mask]
+        
+        x = (0.5 - u / self.resolution_x) * self.camera_sensor_width / self.camera_lens
+        y = (0.5 - v / self.resolution_y) * sensor_height / self.camera_lens
+        z = np.ones_like(x)
+        
+        norm = np.linalg.norm(np.stack([x, y, z], -1), axis=-1)
+        
+        u = (0.5 - x * self.camera_lens / self.camera_sensor_width) * self.resolution_x
+        v = (0.5 - y * self.camera_lens / sensor_height) * self.resolution_y
+        
+        intrinsics_inv = np.linalg.inv(self.intrinsics)
+        
+        grid = np.stack([u, v], -1).T
+
+        # shape: height * width
+        # mesh_grid = np.meshgrid(x, y) #[height, width, 2]
+        # mesh_grid = np.reshape(mesh_grid, [2, -1])
+        length = grid.shape[1]
+        ones = np.ones([1, length])
+        uv_grid = np.concatenate((grid, ones), axis=0) # [3, num_pixel]
+
+        xyz = intrinsics_inv @ uv_grid # [3, num_pixel]
+        xyz = np.transpose(xyz) #[num_pixel, 3]
+
+        z = depth[mask] / norm
+
+        # print(np.amax(z), np.amin(z))
+        pts = xyz * z[:, np.newaxis]/xyz[:, -1:]
+        pts[:, 0] = -pts[:, 0]
+        pts[:, 1] = -pts[:, 1]
+
+        return pts
+    
+    def __getitem__(self, idx):
+        shapenet_cls, mesh_name = self.model_names[idx].split('/')
+        # print(shapenet_cls, mesh_name)
+        img_idx = np.random.randint(1, 21)
+        img_path = hydra.utils.to_absolute_path(os.path.join(self.cfg.data_root, f'{shapenet_cls}/{mesh_name}/{img_idx}.png'))
+        depth_path = hydra.utils.to_absolute_path(os.path.join(self.cfg.data_root, f'{shapenet_cls}/{mesh_name}/{img_idx}_depth0001.exr'))
+        if not os.path.exists(img_path):
+            return self[np.random.randint(len(self))]
+        
+        tr = np.load(img_path.replace('.png', '.tr.npy'))
+        rot = np.load(img_path.replace('.png', '.rot.npy'))
+        scale = np.load(img_path.replace('.png', '.scale.npy'))
+        
+        beta = R.from_matrix(rot).as_euler('yxy', degrees=True)
+        # print(beta)
+        if beta[1] > 60 or np.abs(tr[2]) < 0.8:
+            return self[np.random.randint(len(self))]
+        
+        rgb = cv2.imread(img_path)[:, :, ::-1]
+        depth = np.frombuffer(OpenEXR.InputFile(depth_path).channel('R'), np.float32).reshape(480, 640).copy()
+        depth[depth > 100] = 0
+        rgb[depth == 0] = np.full((3,), 255)
+        
+        mask = (depth > 0).astype(bool)
+        if np.sum(mask) < 100:
+            return self[np.random.randint(len(self))]
+        
+        idxs = np.where(mask)
+        
+        pc = self.backproject(depth, mask)
+        pc[:, 0] = -pc[:, 0]
+        pc[:, 2] = -pc[:, 2]
+        
+        pc += tr
+        pc = (rot.T @ pc.T).T
+        
+        # crop image
+        bbox = np.array([
+            [np.min(idxs[0]), np.max(idxs[0])],
+            [np.min(idxs[1]), np.max(idxs[1])]
+        ])
+        rgb = (cv2.resize(rgb[bbox[0][0]:bbox[0][1]+1, bbox[1][0]:bbox[1][1]+1], (224, 224)) / 255.).astype(np.float32)
+        depth = cv2.resize(depth[bbox[0][0]:bbox[0][1]+1, bbox[1][0]:bbox[1][1]+1], (224, 224), interpolation=cv2.INTER_NEAREST)
+        
+        label = np.full((rgb.shape[0], rgb.shape[1]), -100, np.int64)
+        
+        resize_scale = 224 / (bbox[:, 1] - bbox[:, 0])
+        pc_xy = np.stack(idxs, -1)
+        idxs_resized = np.clip(((pc_xy - bbox[:, 0]) * resize_scale).astype(np.int64), 0, 223)
+        
+        pcd = o3d.geometry.PointCloud()
+        pcd.points = o3d.utility.Vector3dVector(pc)
+        plane1, inlier1 = pcd.segment_plane(distance_threshold=0.01,
+                                    ransac_n=3,
+                                    num_iterations=100)
+        if len(inlier1) > pc.shape[0] - 3:
+            return self[np.random.randint(len(self))]
+        idx_mapping = np.delete(np.arange(pc.shape[0]), inlier1)
+        pcd.points = o3d.utility.Vector3dVector(np.delete(pc, inlier1, axis=0))
+        plane2, inlier2 = pcd.segment_plane(distance_threshold=0.01,
+                                    ransac_n=3,
+                                    num_iterations=100)
+        inlier2 = idx_mapping[inlier2]
+        base = inlier1
+        screen = inlier2
+        
+        if np.abs(plane1[1]) < np.abs(plane2[1]):
+            base = inlier2
+            screen = inlier1
+            
+        label[idxs_resized[base][:, 0], idxs_resized[base][:, 1]] = 0
+        label[idxs_resized[screen][:, 0], idxs_resized[screen][:, 1]] = 1
+        rgb = augment_rgb(rgb, np.full((3,), 1.))
+        return rgb, label
 
