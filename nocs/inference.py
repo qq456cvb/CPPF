@@ -31,11 +31,13 @@ synset_names_inv = dict([(k, v) for v, k in enumerate(synset_names)])
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--seg_dir', default='data/nocs_seg', help='Segmentation PKL files for NOCS')
+    parser.add_argument('--nocs_dir', default='data/nocs', help='NOCS real test image path')
     parser.add_argument('--out_dir', default='data/nocs_prediction', help='Output directory for predictions')
     parser.add_argument('--cp_device', type=int, default=0, help='GPU device number for custom voting algorithms')
     parser.add_argument('--ckpt_path', default='checkpoints', help='Model checkpoint path')
     parser.add_argument('--angle_prec', type=float, default=1.5, help='Angle precision in orientation voting')
     parser.add_argument('--num_rots', type=int, default=72, help='Number of candidate center votes generated for a given point pair')
+    parser.add_argument('--bbox_mask', action='store_true', help='Whether to use bbox mask instead of instance segmentations.')
     args = parser.parse_args()
 
     cp_device = args.cp_device
@@ -102,16 +104,19 @@ if __name__ == "__main__":
     bcelogits = torch.nn.BCEWithLogitsLoss()
 
     for res in tqdm(final_results):
-        img = cv2.imread(res['image_path'] + '_color.png')[:, :, ::-1]
-        depth = cv2.imread(res['image_path'] + '_depth.png', -1)
+        img = cv2.imread(os.path.join(args.nocs_dir, res['image_path'][5:] + '_color.png'))[:, :, ::-1]
+        depth = cv2.imread(os.path.join(args.nocs_dir, res['image_path'][5:] + '_depth.png'), -1)
 
         bboxs = res['pred_bboxes']
-        masks = res['pred_masks']
+        masks = res['pred_masks'].copy()
         RTs = np.zeros((len(bboxs), 4, 4), dtype=np.float32)
         scales = np.zeros((len(bboxs), 3), dtype=np.float32)
         cls_ids = res['pred_class_ids']
         
         for i, bbox in enumerate(bboxs):
+            if args.bbox_mask:
+                masks[:, :, i][bbox[0]:bbox[2], bbox[1]:bbox[3]] = True
+
             cls_id = cls_ids[i]
             cls_name = synset_names[cls_id]
             
@@ -297,10 +302,10 @@ if __name__ == "__main__":
             if cfg.regress_right:
                 right = final_directions[1]
                 right -= np.dot(up, right) * up
-                right /= np.linalg.norm(right)
+                right /= (np.linalg.norm(right) + 1e-9)
             else:
                 right = np.array([0, -up[2], up[1]])
-                right /= np.linalg.norm(right)
+                right /= (np.linalg.norm(right) + 1e-9)
             
             if (cls_name == 'laptop') and (laptop_up is not None):
                 if np.dot(up, laptop_up) + np.dot(right, laptop_up) < np.dot(up, -laptop_up) + np.dot(right, -laptop_up):
@@ -311,8 +316,13 @@ if __name__ == "__main__":
                     right = up
                     up = laptop_up
                     right -= np.dot(up, right) * up
-                    right /= np.linalg.norm(right)
-                    
+                    right /= (np.linalg.norm(right) + 1e-9)
+            
+            if np.linalg.norm(right) < 1e-7: # right is zero
+                right = np.random.randn(3)
+                right -= right.dot(up) * up
+                right /= np.linalg.norm(right)
+
             if cfg.z_right:
                 R_est = np.stack([np.cross(up, right), up, right], -1)
             else:
@@ -320,7 +330,9 @@ if __name__ == "__main__":
 
             pred_scale = np.exp(preds_scale[0].mean(0).cpu().numpy()) * cfg.scale_mean * 2
             scale_norm = np.linalg.norm(pred_scale)
+            assert scale_norm > 0
             RTs[i][:3, :3] = R_est * scale_norm
+            RTs[i][3, 3] = 1.
             scales[i, :] = pred_scale / scale_norm
             
         res['pred_RTs'] = RTs

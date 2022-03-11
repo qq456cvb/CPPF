@@ -27,7 +27,6 @@ if __name__ == '__main__':
             else:
                 assert len(result['gt_handle_visibility']) == len(result['gt_class_ids']), "{} {}".format(result['gt_handle_visibility'], result['gt_class_ids'])
 
-
         if type(result) is list:
             final_results += result
         elif type(result) is dict:

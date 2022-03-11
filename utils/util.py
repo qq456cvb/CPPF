@@ -799,7 +799,7 @@ def compute_degree_cm_mAP(final_results, synset_names, log_dir, degree_threshold
         pred_bboxes[...] = 1
         if len(pred_RTs) > 0:
             norm_pred_scales = np.stack([np.cbrt(np.linalg.det(pred_RT[:3, :3])) for pred_RT in pred_RTs])
-            pred_RTs[:, :3, :3] = pred_RTs[:, :3, :3] / norm_pred_scales[:, None, None]
+            pred_RTs[:, :3, :3] = pred_RTs[:, :3, :3] / (norm_pred_scales[:, None, None] + 1e-9)
             pred_scales = pred_scales * norm_pred_scales[:, None]
         #print(pred_bboxes.shape[0], pred_class_ids.shape[0], pred_scores.shape[0], pred_RTs.shape[0])
 

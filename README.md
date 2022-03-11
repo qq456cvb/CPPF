@@ -20,7 +20,7 @@ CVPR 2022
 <a href='https://qq456cvb.github.io/projects/cppf'>
   <img src='https://img.shields.io/badge/Project-Page-green?style=flat&logo=googlechrome&logoColor=green' alt='Project Page'>
 </a>
-  <a href='https://colab.research.google.com/'>
+  <a href='#'>
     <img src='https://colab.research.google.com/assets/colab-badge.svg' alt='Google Colab'>
   </a>
 <br>
@@ -86,7 +86,7 @@ python train.py category=bathtub,bed,bookshelf,chair,sofa,table -m
 
 For Laptops, geometry alone cannot determine the pose unambiguously, we rely on an auxiliary segmentation network that segments out the lid and the keyboard base.
 
-To train the segmenter network, first download our Blender physically rendered laptop images from [Google Drive]() and place it under ``data/laptop``. Then run the following command:
+To train the segmenter network, first download our Blender physically rendered laptop images from [Google Drive](https://drive.google.com/file/d/1gRHGt47nP9arDAu3hwnDNgfwJMxJYtCa/view?usp=sharing) and place it under ``data/laptop``. Then run the following command:
 ```
 python train_laptop_aux.py
 ```
@@ -94,16 +94,54 @@ python train_laptop_aux.py
 
 
 # Pretrained Models
+Pretrained models for various ShapeNet categories can be downloaded from [Google Drive](https://drive.google.com/drive/folders/11wm5WHDjmSBfhng6emxCBBYZexmLoxLk?usp=sharing).
 # Test on NOCS REAL275
 
 <details>
-<summary>With Instance Segmentation Mask</summary>
+<summary>Data Preparation</summary>
 
+First download the detection priors from [Google Drive](https://drive.google.com/file/d/1cvGiXG_2ya8CMHss1IDobdL81qeODOrE/view?usp=sharing), which is used for evaluation with instance segmentation or bounding box masks. Put the directory under ``data/nocs_seg``.
+
+Then download RGB-D images from [NOCS REAL275](http://download.cs.stanford.edu/orion/nocs/real_test.zip) dataset and put it under ``data/nocs``.
+
+Place (pre-)trained models under ``checkpoints``.
 </details>
 
-## With Bounding Box Mask
+<details>
+<summary>Evaluate with Instance Segmentation Mask</summary>
 
-## Zero-Shot Instance Segmentation and Pose Estimation
+First save inference outputs:
+```
+python nocs/inference.py
+``` 
+
+Then evaluate mAP: 
+```
+python nocs/eval.py | tee nocs/map.txt
+```
+</details>
+
+<details>
+<summary> Evaluate with Bounding Box Mask</summary>
+
+First save inference outputs with bounding box mask enabled:
+```
+python nocs/inference.py --bbox_mask
+``` 
+
+Then evaluate mAP: 
+```
+python nocs/eval.py | tee nocs/map_bbox.txt
+```
+</details>
+
+<details>
+<summary> Zero-Shot Instance Segmentation and Pose Estimation</summary>
+Coming soon.
+
+</details>
 # Test on SUN RGB-D
+Coming soon.
 
 # Train on Your Own Object Collections
+Coming soon.
