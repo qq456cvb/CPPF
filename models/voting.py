@@ -2,7 +2,7 @@ import cupy as cp
 import numpy as np
     
 ppf_kernel = cp.RawKernel(r'''
-    #include "/home/neil/ppf_matching/helper_math.cuh"
+    #include "helper_math.cuh"
     #define M_PI 3.14159265358979323846264338327950288
     extern "C" __global__
     void ppf_voting(
@@ -25,8 +25,7 @@ ppf_kernel = cp.RawKernel(r'''
             float3 co = make_float3(0.f, -ab.z, ab.y);
             float3 x = co / (length(co) + 1e-7) * odist;
             float3 y = cross(x, ab);
-            // int adaptive_n_rots = min(int(odist / res * (2 * M_PI)), n_rots);
-            int adaptive_n_rots = n_rots;
+            int adaptive_n_rots = min(int(odist / res * (2 * M_PI)), n_rots);
             for (int i = 0; i < adaptive_n_rots; i++) {
                 float angle = i * 2 * M_PI / adaptive_n_rots;
                 float3 offset = cos(angle) * x + sin(angle) * y;
@@ -62,11 +61,11 @@ ppf_kernel = cp.RawKernel(r'''
             }
         }
     }
-''', 'ppf_voting')
+''', 'ppf_voting', options=('-I models/include',))
 
 
 backvote_kernel = cp.RawKernel(r'''
-    #include "/home/neil/ppf_matching/helper_math.cuh"
+    #include "helper_math.cuh"
     #define M_PI 3.14159265358979323846264338327950288
     extern "C" __global__
     void backvote(
@@ -106,10 +105,10 @@ backvote_kernel = cp.RawKernel(r'''
             }
         }
     }
-''', 'backvote')
+''', 'backvote', options=('-I models/include',))
 
 rot_voting_kernel = cp.RawKernel(r'''
-    #include "/home/neil/ppf_matching/helper_math.cuh"
+    #include "helper_math.cuh"
     #define M_PI 3.14159265358979323846264338327950288
     extern "C" __global__
     void rot_voting(
@@ -142,10 +141,10 @@ rot_voting_kernel = cp.RawKernel(r'''
             }
         }
     }
-''', 'rot_voting')
+''', 'rot_voting', options=('-I models/include',))
 
 findpeak_kernel = cp.RawKernel(r'''
-    #include "/home/neil/ppf_matching/helper_math.cuh"
+    #include "models/src/helper_math.cuh"
     #define M_PI 3.14159265358979323846264338327950288
     extern "C" __global__
     void findpeak(
@@ -166,4 +165,4 @@ findpeak_kernel = cp.RawKernel(r'''
             outputs[idx] = diff_x + diff_y + diff_z;
         }
     }
-''', 'findpeak')
+''', 'findpeak', options=('-I models/include',))
