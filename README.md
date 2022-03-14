@@ -37,32 +37,53 @@ CVPR 2022
 - [Test on NOCS REAL275](#test-on-nocs-real275)
 - [Test on SUN RGB-D](#test-on-sun-rgb-d)
 - [Train on Your Own Object Collections](#train-on-your-own-object-collections)
+- [Citation](#citation)
 # Overview
 
 This is the official code implementation of CPPF, including both training and testing. Inference on custom datasets is also supported.
   
 # Installation
 You can run the following command to setup an environment, tested on Ubuntu 18.04:
+<details>
+<summary><b>Create Conda Env</b></summary>
 
 ```
 conda create -n cppf python=3.8
+```
+</details>
+
+<details>
+<summary><b>Install Pytorch</b></summary>
+
+```
 conda install pytorch torchvision cudatoolkit=10.2 -c pytorch-lts
+```
+</details>
+
+<details>
+<summary><b>Install Other Dependencies</b></summary>
+
+```
 pip install tqdm opencv-python scipy matplotlib open3d==0.12.0 hydra-core pyrender cupy-cuda102 PyOpenGL-accelerate OpenEXR
 CXX=g++-7 CC=gcc-7 pip install MinkowskiEngine==0.5.4 -v
 ```
-We use [Hydra](https://hydra.cc/) configuration system to run scripts.
-Notice that we use pyrender with OSMesa support, you may need to install OSMesa after running ```pip install pyrender```, more details can be found [here](https://pyrender.readthedocs.io/en/latest/install/index.html).
+</details>
 
+<details>
+<summary><b>Miscellaneous</b></summary>
+
+Notice that we use pyrender with OSMesa support, you may need to install OSMesa after running ```pip install pyrender```, more details can be found [here](https://pyrender.readthedocs.io/en/latest/install/index.html).
+</details>
 # Train on ShapeNet Objects
 <details>
-<summary>Data Preparation</summary>
+<summary><b>Data Preparation</b></summary>
 
 Download [ShapeNet v2](https://shapenet.org/) dataset and modify the ``shapenet_root`` key in ``config/config.yaml`` to point to the location of the dataset.
 
 </details>
 
 <details>
-<summary>Train on NOCS REAL275 objects</summary>
+<summary><b>Train on NOCS REAL275 objects</b></summary>
 
 To train on synthetic ShapeNet objects that appear in NOCS REAL275, run:
 ```
@@ -73,7 +94,7 @@ For laptops, an auxiliary segmentation is needed to ensure a unique pose. Please
 </details>
 
 <details>
-<summary>Train on SUN RGB-D objects</summary>
+<summary><b>Train on SUN RGB-D objects</b></summary>
 
 To train on synthetic ShapeNet objects that appear in SUN RGB-D, run:
 ```
@@ -82,7 +103,7 @@ python train.py category=bathtub,bed,bookshelf,chair,sofa,table -m
 </details>
 
 <details>
-<summary id='laptop-aux'>Auxiliary Segmentation for Laptops</summary>
+<summary id='laptop-aux'><b>Auxiliary Segmentation for Laptops</b></summary>
 
 For Laptops, geometry alone cannot determine the pose unambiguously, we rely on an auxiliary segmentation network that segments out the lid and the keyboard base.
 
@@ -98,7 +119,7 @@ Pretrained models for various ShapeNet categories can be downloaded from [Google
 # Test on NOCS REAL275
 
 <details>
-<summary>Data Preparation</summary>
+<summary><b>Data Preparation</b></summary>
 
 First download the detection priors from [Google Drive](https://drive.google.com/file/d/1cvGiXG_2ya8CMHss1IDobdL81qeODOrE/view?usp=sharing), which is used for evaluation with instance segmentation or bounding box masks. Put the directory under ``data/nocs_seg``.
 
@@ -108,11 +129,11 @@ Place (pre-)trained models under ``checkpoints``.
 </details>
 
 <details>
-<summary>Evaluate with Instance Segmentation Mask</summary>
+<summary><b>Evaluate with Instance Segmentation Mask</b></summary>
 
 First save inference outputs:
 ```
-python nocs/inference.py
+python nocs/inference.py --adaptive_voting
 ``` 
 
 Then evaluate mAP: 
@@ -122,11 +143,11 @@ python nocs/eval.py | tee nocs/map.txt
 </details>
 
 <details>
-<summary> Evaluate with Bounding Box Mask</summary>
+<summary><b>Evaluate with Bounding Box Mask</b></summary>
 
 First save inference outputs with bounding box mask enabled:
 ```
-python nocs/inference.py --bbox_mask
+python nocs/inference.py --bbox_mask --adaptive_voting
 ``` 
 
 Then evaluate mAP: 
@@ -136,12 +157,43 @@ python nocs/eval.py | tee nocs/map_bbox.txt
 </details>
 
 <details>
-<summary> Zero-Shot Instance Segmentation and Pose Estimation</summary>
+<summary><b>Zero-Shot Instance Segmentation and Pose Estimation</b></summary>
 Coming soon.
 
 </details>
+
 # Test on SUN RGB-D
-Coming soon.
+<details>
+<summary><b>Data Preparation</b></summary>
+
+We follow the same data preparation process as in [VoteNet](https://github.com/facebookresearch/votenet/blob/main/sunrgbd/README.md). You need to first download [SUNRGBD v2 data](http://rgbd.cs.princeton.edu/data/) (``SUNRGBD.zip``, ``SUNRGBDMeta2DBB_v2.mat``, ``SUNRGBDMeta3DBB_v2.mat``) and the toolkits (``SUNRGBDtoolbox.zip``). Move all the downloaded files under ``data/OFFICIAL_SUNRGBD``. Unzip the zip files.
+
+Download the prepared extra data for SUN RGB-D from [Google Drive](https://drive.google.com/drive/folders/1FSn8j2wIq1VDm5FQNBKuKZ5Wx2G0Ox0S?usp=sharing), and move it under ``data/sunrgbd_extra``. Unzip the zip files.
+</details>
+
+<details>
+<summary><b>Evaluate with Instance Segmentation Mask</b></summary>
+
+First save inference outputs:
+```
+python sunrgbd/inference.py
+``` 
+
+Then evaluate mAP: 
+```
+python sunrgbd/eval.py | tee sunrgbd/map.txt
+```
+</details>
 
 # Train on Your Own Object Collections
 Coming soon.
+
+# Citation
+```
+@inproceedings{you2022cppf,
+  title={CPPF: Towards Robust Category-Level 9D Pose Estimation in the Wild},
+  author={You, Yang and Shi, Ruoxi and Wang, Weiming and Lu, Cewu},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  year={2022}
+}
+```

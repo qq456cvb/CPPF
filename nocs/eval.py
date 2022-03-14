@@ -14,18 +14,25 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     result_pkl_list = glob.glob(os.path.join(args.pred_dir, 'results_*.pkl'))
-    result_pkl_list = sorted(result_pkl_list)[:]
+    result_pkl_list = sorted(result_pkl_list)[::10]
     assert len(result_pkl_list)
 
     final_results = []
     for pkl_path in tqdm(result_pkl_list):
         with open(pkl_path, 'rb') as f: 
             result = pickle.load(f)
-            if not 'gt_handle_visibility' in result:
-                result['gt_handle_visibility'] = np.ones_like(result['gt_class_ids'])
-                print('can\'t find gt_handle_visibility in the pkl.')
-            else:
-                assert len(result['gt_handle_visibility']) == len(result['gt_class_ids']), "{} {}".format(result['gt_handle_visibility'], result['gt_class_ids'])
+            
+            gt_handle_visibility = result['gt_handle_visibility']
+            gt_class_ids = result['gt_class_ids']
+            result['gt_up_syms'] = np.zeros_like(result['gt_handle_visibility'], dtype=bool)
+            for i, (cls_id, vis) in enumerate(zip(gt_class_ids, gt_handle_visibility)):
+                if vis == 0:  # handle not seen, assume up summetry
+                    assert synset_names[cls_id] == 'mug'
+                    result['gt_up_syms'][i] = True
+                elif synset_names[cls_id] in ['bowl', 'bottle', 'can']:
+                    result['gt_up_syms'][i] = True
+
+            assert len(result['gt_handle_visibility']) == len(result['gt_class_ids']), "{} {}".format(result['gt_handle_visibility'], result['gt_class_ids'])
 
         if type(result) is list:
             final_results += result

@@ -178,14 +178,13 @@ def prob2real(prob, max_val, num_bins, circular=False):
         return res
 
 
-def compute_3d_iou(RT_1, RT_2, scales_1, scales_2, handle_visibility, class_name_1, class_name_2):
+def compute_3d_iou(RT_1, RT_2, scales_1, scales_2, up_sym, class_name_1, class_name_2):
     '''Computes IoU overlaps between two 3d bboxes.
        bbox_3d_1, bbox_3d_1: [3, 8]
     '''
     
     def asymmetric_3d_iou(RT_1, RT_2, scales_1, scales_2):
         try:
-            # import pdb; pdb.set_trace()
             RT_1[:3, :3] = RT_1[:3, :3] / np.cbrt(np.linalg.det(RT_1[:3, :3]))
             RT_2[:3, :3] = RT_2[:3, :3] / np.cbrt(np.linalg.det(RT_2[:3, :3]))
             box1 = Box.from_transformation(RT_1[:3, :3], RT_1[:3, -1], scales_1)
@@ -198,8 +197,7 @@ def compute_3d_iou(RT_1, RT_2, scales_1, scales_2, handle_visibility, class_name
     if RT_1 is None or RT_2 is None:
         return -1
 
-    symmetry_flag = False
-    if (class_name_1 in ['bottle', 'bowl', 'can'] and class_name_1 == class_name_2) or (class_name_1 == 'mug' and class_name_1 == class_name_2 and handle_visibility==0):
+    if (class_name_1 == class_name_2 and up_sym):
         def y_rotation_matrix(theta):
             return np.array([[np.cos(theta), 0, np.sin(theta), 0],
                              [0, 1, 0 , 0], 
@@ -218,31 +216,11 @@ def compute_3d_iou(RT_1, RT_2, scales_1, scales_2, handle_visibility, class_name
     return max_iou
 
 
-def compute_RT_degree_cm_symmetry(RT_1, RT_2, class_id, handle_visibility, synset_names):
+def compute_RT_degree_cm_symmetry(RT_1, RT_2, up_sym):
     '''
     :param RT_1: [4, 4]. homogeneous affine transformation
     :param RT_2: [4, 4]. homogeneous affine transformation
     :return: theta: angle difference of R in degree, shift: l2 difference of T in centimeter
-    synset_names = ['BG',  # 0
-                    'bottle',  # 1
-                    'bowl',  # 2
-                    'camera',  # 3
-                    'can',  # 4
-                    'cap',  # 5
-                    'phone',  # 6
-                    'monitor',  # 7
-                    'laptop',  # 8
-                    'mug'  # 9
-                    ]
-    
-    synset_names = ['BG',  # 0
-                    'bottle',  # 1
-                    'bowl',  # 2
-                    'camera',  # 3
-                    'can',  # 4
-                    'laptop',  # 5
-                    'mug'  # 6
-                    ]
     '''
 
     ## make sure the last row is [0, 0, 0, 1]
@@ -261,22 +239,11 @@ def compute_RT_degree_cm_symmetry(RT_1, RT_2, class_id, handle_visibility, synse
     R2 = RT_2[:3, :3] / np.cbrt(np.linalg.det(RT_2[:3, :3]))
     T2 = RT_2[:3, 3]
 
-    if synset_names[class_id] in ['bottle', 'can', 'bowl']:  ## symmetric when rotating around y-axis
+    if up_sym:  ## symmetric when rotating around y-axis
         y = np.array([0, 1, 0])
         y1 = R1 @ y
         y2 = R2 @ y
         theta = np.arccos(y1.dot(y2) / (np.linalg.norm(y1) * np.linalg.norm(y2)))
-    elif synset_names[class_id] in ['mug', 'chair', 'bathtub', 'bookshelf', 'bed', 'sofa', 'table'] and handle_visibility == 0:  ## symmetric when rotating around y-axis
-        y = np.array([0, 1, 0])
-        y1 = R1 @ y
-        y2 = R2 @ y
-        theta = np.arccos(y1.dot(y2) / (np.linalg.norm(y1) * np.linalg.norm(y2)))
-    elif synset_names[class_id] in ['phone', 'eggbox', 'glue']:
-        y_180_RT = np.diag([-1.0, 1.0, -1.0])
-        R = R1 @ R2.transpose()
-        R_rot = R1 @ y_180_RT @ R2.transpose()
-        theta = min(np.arccos((np.trace(R) - 1) / 2),
-                    np.arccos((np.trace(R_rot) - 1) / 2))
     else:
         R = R1 @ R2.transpose()
         theta = np.arccos((np.trace(R) - 1) / 2)
@@ -372,7 +339,7 @@ def trim_zeros(x):
 
     return new_x
 
-def compute_3d_matches(gt_class_ids, gt_RTs, gt_scales, gt_handle_visibility, synset_names,
+def compute_3d_matches(gt_class_ids, gt_RTs, gt_scales, gt_up_syms, synset_names,
                        pred_boxes, pred_class_ids, pred_scores, pred_RTs, pred_scales,
                        iou_3d_thresholds, score_threshold=0):
     """Finds matches between prediction and ground truth instances.
@@ -410,7 +377,7 @@ def compute_3d_matches(gt_class_ids, gt_RTs, gt_scales, gt_handle_visibility, sy
         for j in range(num_gt):
             #overlaps[i, j] = compute_3d_iou(pred_3d_bboxs[i], gt_3d_bboxs[j], gt_handle_visibility[j], 
             #    synset_names[pred_class_ids[i]], synset_names[gt_class_ids[j]])
-            overlaps[i, j] = compute_3d_iou(pred_RTs[i], gt_RTs[j], pred_scales[i, :], gt_scales[j], gt_handle_visibility[j], synset_names[pred_class_ids[i]], synset_names[gt_class_ids[j]])
+            overlaps[i, j] = compute_3d_iou(pred_RTs[i], gt_RTs[j], pred_scales[i, :], gt_scales[j], gt_up_syms[j], synset_names[pred_class_ids[i]], synset_names[gt_class_ids[j]])
 
     # Loop through predictions and find matching ground truth boxes
     num_iou_3d_thres = len(iou_3d_thresholds)
@@ -477,9 +444,8 @@ def compute_ap_from_matches_scores(pred_match, pred_scores, gt_match):
     return ap
 
 
-def compute_RT_overlaps(gt_class_ids, gt_RTs, gt_handle_visibility,
-                        pred_class_ids, pred_RTs, 
-                        synset_names):
+def compute_RT_overlaps(gt_class_ids, gt_RTs, gt_up_syms,
+                        pred_class_ids, pred_RTs):
     """Finds overlaps between prediction and ground truth instances.
     Returns:
         overlaps: [pred_boxes, gt_boxes] IoU overlaps.
@@ -496,9 +462,7 @@ def compute_RT_overlaps(gt_class_ids, gt_RTs, gt_handle_visibility,
         for j in range(num_gt):
             overlaps[i, j, :] = compute_RT_degree_cm_symmetry(pred_RTs[i], 
                                                               gt_RTs[j], 
-                                                              gt_class_ids[j], 
-                                                              gt_handle_visibility[j],
-                                                              synset_names)
+                                                              gt_up_syms[j])
             
     return overlaps
 
@@ -786,7 +750,7 @@ def compute_degree_cm_mAP(final_results, synset_names, log_dir, degree_threshold
         # normalize RTs and scales
         gt_RTs = np.array(result['gt_RTs'])
         gt_scales = np.array(result['gt_scales'])
-        gt_handle_visibility = result['gt_handle_visibility']
+        gt_up_syms = result['gt_up_syms']
         norm_gt_scales = np.stack([np.cbrt(np.linalg.det(gt_RT[:3, :3])) for gt_RT in gt_RTs])
         gt_RTs[:, :3, :3] = gt_RTs[:, :3, :3] / norm_gt_scales[:, None, None]
         gt_scales = gt_scales * norm_gt_scales[:, None]
@@ -803,7 +767,6 @@ def compute_degree_cm_mAP(final_results, synset_names, log_dir, degree_threshold
             pred_scales = pred_scales * norm_pred_scales[:, None]
         #print(pred_bboxes.shape[0], pred_class_ids.shape[0], pred_scores.shape[0], pred_RTs.shape[0])
 
-        # import pdb; pdb.set_trace()
         if len(gt_class_ids) == 0 and len(pred_class_ids) == 0:
             continue
 
@@ -823,19 +786,16 @@ def compute_degree_cm_mAP(final_results, synset_names, log_dir, degree_threshold
             else:
                 pred_idx_mapping = dict([(i, j) for i, j in enumerate(range(20))])
             cls_pred_class_ids = pred_class_ids[pred_class_ids==cls_id] if len(pred_class_ids) else np.zeros(0)
-            cls_pred_bboxes =  pred_bboxes[pred_class_ids==cls_id, :] if len(pred_class_ids) else np.zeros((0, 4))
+            cls_pred_bboxes =  pred_bboxes[pred_class_ids==cls_id] if len(pred_class_ids) else np.zeros((0, 4))
             cls_pred_scores = pred_scores[pred_class_ids==cls_id] if len(pred_class_ids) else np.zeros(0)
             cls_pred_RTs = pred_RTs[pred_class_ids==cls_id] if len(pred_class_ids) else np.zeros((0, 4, 4))
             cls_pred_scales = pred_scales[pred_class_ids==cls_id] if len(pred_class_ids) else np.zeros((0, 3))
 
             # calculate the overlap between each gt instance and pred instance
-            if synset_names[cls_id] != 'mug':
-                cls_gt_handle_visibility = np.ones_like(cls_gt_class_ids)
-            else:
-                cls_gt_handle_visibility = gt_handle_visibility[gt_class_ids==cls_id] if len(gt_class_ids) else np.ones(0)
+            cls_gt_up_syms = gt_up_syms[gt_class_ids==cls_id] if len(gt_class_ids) else np.ones(0)
 
 
-            iou_cls_gt_match, iou_cls_pred_match, _, iou_pred_indices = compute_3d_matches(cls_gt_class_ids, cls_gt_RTs, cls_gt_scales, cls_gt_handle_visibility, synset_names,
+            iou_cls_gt_match, iou_cls_pred_match, _, iou_pred_indices = compute_3d_matches(cls_gt_class_ids, cls_gt_RTs, cls_gt_scales, cls_gt_up_syms, synset_names,
                                                                                            cls_pred_bboxes, cls_pred_class_ids, cls_pred_scores, cls_pred_RTs, cls_pred_scales,
                                                                                            iou_thres_list)
             if len(iou_pred_indices):
@@ -870,11 +830,10 @@ def compute_degree_cm_mAP(final_results, synset_names, log_dir, degree_threshold
                     gt_idx_mapping = dict([(i, gt_idx_mapping[j]) for i, j in enumerate(np.where(iou_thres_gt_match > -1)[0])])
                 cls_gt_class_ids = cls_gt_class_ids[iou_thres_gt_match > -1] if len(iou_thres_gt_match) > 0 else np.zeros(0)
                 cls_gt_RTs = cls_gt_RTs[iou_thres_gt_match > -1] if len(iou_thres_gt_match) > 0 else np.zeros((0, 4, 4))
-                cls_gt_handle_visibility = cls_gt_handle_visibility[iou_thres_gt_match > -1] if len(iou_thres_gt_match) > 0 else np.zeros(0)
-
-            RT_overlaps = compute_RT_overlaps(cls_gt_class_ids, cls_gt_RTs, cls_gt_handle_visibility, 
-                                              cls_pred_class_ids, cls_pred_RTs,
-                                              synset_names)
+                cls_gt_up_syms = cls_gt_up_syms[iou_thres_gt_match > -1] if len(iou_thres_gt_match) > 0 else np.zeros(0)
+            
+            RT_overlaps = compute_RT_overlaps(cls_gt_class_ids, cls_gt_RTs, cls_gt_up_syms, 
+                                              cls_pred_class_ids, cls_pred_RTs)
 
 
             pose_cls_gt_match, pose_cls_pred_match = compute_match_from_degree_cm(RT_overlaps, 

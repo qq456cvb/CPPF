@@ -221,7 +221,7 @@ class ShapeNetDataset(torch.utils.data.Dataset):
         pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamKNN(knn=self.cfg.knn))
         normals = np.array(pcd.normals).astype(np.float32)
         
-        # dummy normal
+        # generate voting target
         targets_tr, targets_rot, targets_rot_aux, point_idxs = generate_target(pc, normals, self.cfg.up_sym, self.cfg.right_sym, self.cfg.z_right, 200000)
         
         if self.cfg.cls_bins:
@@ -238,8 +238,7 @@ class ShapeNetDataset(torch.utils.data.Dataset):
             ], 1)
                 
         targets_scale = np.log(((bounds[1] - bounds[0]) / 2).astype(np.float32) * scale) - np.log(np.array(self.cfg.scale_mean))
-        # print(targets_scale)
-        # return pc_colors, (depth / 1000).astype(np.float32), np.stack(idxs, -1).astype(np.int64), \
+        
         return pc.astype(np.float32), normals, targets_tr, targets_rot, targets_rot_aux, targets_scale.astype(np.float32), point_idxs
         
     def __getitem__(self, idx):

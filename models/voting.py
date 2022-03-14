@@ -7,7 +7,7 @@ ppf_kernel = cp.RawKernel(r'''
     extern "C" __global__
     void ppf_voting(
         const float *points, const float *outputs, const float *probs, const int *point_idxs, float *grid_obj, const float *corner, const float res,
-        int n_ppfs, int n_rots, int grid_x, int grid_y, int grid_z
+        int n_ppfs, int n_rots, int grid_x, int grid_y, int grid_z, bool adaptive
     ) {
         const int idx = blockIdx.x * blockDim.x + threadIdx.x;
         if (idx < n_ppfs) {
@@ -25,7 +25,8 @@ ppf_kernel = cp.RawKernel(r'''
             float3 co = make_float3(0.f, -ab.z, ab.y);
             float3 x = co / (length(co) + 1e-7) * odist;
             float3 y = cross(x, ab);
-            int adaptive_n_rots = min(int(odist / res * (2 * M_PI)), n_rots);
+            int adaptive_n_rots = n_rots;
+            if (adaptive) adaptive_n_rots = min(int(odist / res * (2 * M_PI)), n_rots);
             for (int i = 0; i < adaptive_n_rots; i++) {
                 float angle = i * 2 * M_PI / adaptive_n_rots;
                 float3 offset = cos(angle) * x + sin(angle) * y;

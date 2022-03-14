@@ -37,7 +37,9 @@ if __name__ == "__main__":
     parser.add_argument('--ckpt_path', default='checkpoints', help='Model checkpoint path')
     parser.add_argument('--angle_prec', type=float, default=1.5, help='Angle precision in orientation voting')
     parser.add_argument('--num_rots', type=int, default=72, help='Number of candidate center votes generated for a given point pair')
-    parser.add_argument('--bbox_mask', action='store_true', help='Whether to use bbox mask instead of instance segmentations.')
+    parser.add_argument('--n_threads', type=int, default=512, help='Number of cupy threads')
+    parser.add_argument('--bbox_mask', action='store_true', help='Whether to use bbox mask instead of instance segmentations')
+    parser.add_argument('--adaptive_voting', action='store_true', help='Whether to use adaptive center voting')
     args = parser.parse_args()
 
     cp_device = args.cp_device
@@ -100,7 +102,7 @@ if __name__ == "__main__":
     sphere_pts = np.array(fibonacci_sphere(num_samples))
 
     num_rots = args.num_rots
-    n_threads = 512
+    n_threads = args.n_threads
     bcelogits = torch.nn.BCEWithLogitsLoss()
 
     for res in tqdm(final_results):
@@ -110,7 +112,9 @@ if __name__ == "__main__":
         bboxs = res['pred_bboxes']
         masks = res['pred_masks'].copy()
         RTs = np.zeros((len(bboxs), 4, 4), dtype=np.float32)
-        scales = np.zeros((len(bboxs), 3), dtype=np.float32)
+        for i in range(len(RTs)):
+            RTs[i] = np.eye(4)
+        scales = np.ones((len(bboxs), 3), dtype=np.float32)
         cls_ids = res['pred_class_ids']
         
         for i, bbox in enumerate(bboxs):
@@ -196,7 +200,7 @@ if __name__ == "__main__":
                     (
                         cp.asarray(pc).astype(cp.float32), cp.asarray(preds_tr[0].cpu().numpy()).astype(cp.float32), cp.asarray(np.ones((pc.shape[0],))).astype(cp.float32), 
                         cp.asarray(point_idxs).astype(cp.int32), grid_obj, cp.asarray(corners[0]), cp.float32(cfg.res), 
-                        point_idxs.shape[0], num_rots, grid_obj.shape[0], grid_obj.shape[1], grid_obj.shape[2]
+                        point_idxs.shape[0], num_rots, grid_obj.shape[0], grid_obj.shape[1], grid_obj.shape[2], True if args.adaptive_voting else False
                     )
                 )
                 
@@ -332,7 +336,6 @@ if __name__ == "__main__":
             scale_norm = np.linalg.norm(pred_scale)
             assert scale_norm > 0
             RTs[i][:3, :3] = R_est * scale_norm
-            RTs[i][3, 3] = 1.
             scales[i, :] = pred_scale / scale_norm
             
         res['pred_RTs'] = RTs
