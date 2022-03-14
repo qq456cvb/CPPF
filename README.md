@@ -28,7 +28,9 @@ CVPR 2022
 </div>
  
   CPPF is a pure sim-to-real method that achieves 9D pose estimation in the wild. Our model is trained solely on ShapeNet synthetic models (without any real-world background pasting), and could be directly applied to real-world scenarios (i.e., NOCS REAL275, SUN RGB-D, etc.). CPPF achieves the goal by using only local $SE3$-invariant geometric features, and leverages a bottom-up voting scheme, which is quite different from previous end-to-end learning methods. Our model is robust to noise, and can obtain decent predictions even if only bounding box masks are provided.
-  
+
+# News
+- **[2022.03]** Our another Detection-by-Voting method [Canonical Voting](https://github.com/qq456cvb/CanonicalVoting), which achieves SoTA on ScanNet, SceneNN, SUN RGB-D is accepted to CVPR 2022.
 # Contents
 - [Overview](#overview)
 - [Installation](#installation)
@@ -73,6 +75,8 @@ CXX=g++-7 CC=gcc-7 pip install MinkowskiEngine==0.5.4 -v
 <summary><b>Miscellaneous</b></summary>
 
 Notice that we use pyrender with OSMesa support, you may need to install OSMesa after running ```pip install pyrender```, more details can be found [here](https://pyrender.readthedocs.io/en/latest/install/index.html).
+
+``MinkowskiEngine`` append its package path into ``sys.path`` (a.k.a., PYTHONPATH), which includes a module named ``utils``. In order not to get messed with our own ``utils`` package, you should import ``MinkowskiEngine`` after importing ``utils``.
 </details>
 # Train on ShapeNet Objects
 <details>
@@ -158,7 +162,8 @@ python nocs/eval.py | tee nocs/map_bbox.txt
 
 <details>
 <summary><b>Zero-Shot Instance Segmentation and Pose Estimation</b></summary>
-Coming soon.
+
+For this task, due to the memory limitation, we use the regression-based network. You can go through the process by running the jupyter notebook ``nocs/zero_shot.ipynb``.
 
 </details>
 
