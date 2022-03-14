@@ -78,6 +78,7 @@ Notice that we use pyrender with OSMesa support, you may need to install OSMesa 
 
 ``MinkowskiEngine`` append its package path into ``sys.path`` (a.k.a., PYTHONPATH), which includes a module named ``utils``. In order not to get messed with our own ``utils`` package, you should import ``MinkowskiEngine`` after importing ``utils``.
 </details>
+
 # Train on ShapeNet Objects
 <details>
 <summary><b>Data Preparation</b></summary>
