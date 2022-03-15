@@ -20,9 +20,9 @@ CVPR 2022
 <a href='https://qq456cvb.github.io/projects/cppf'>
   <img src='https://img.shields.io/badge/Project-Page-green?style=flat&logo=googlechrome&logoColor=green' alt='Project Page'>
 </a>
-  <a href='#'>
+  <!-- <a href='#'>
     <img src='https://colab.research.google.com/assets/colab-badge.svg' alt='Google Colab'>
-  </a>
+  </a> -->
 <br>
 </h3>
 </div>
