@@ -192,7 +192,27 @@ python sunrgbd/eval.py | tee sunrgbd/map.txt
 </details>
 
 # Train on Your Own Object Collections
-Coming soon.
+
+<details>
+<summary><b>Configuration Explained</b></summary>
+
+To train on custom objects, it is necessary to understand some parameters in configuration files.
+- **up_sym**: Whether the objects look like a cylinder from up to bottom (e.g., bottles). This is to ensure the voting target is unambiguous.
+- **right_sym**: Whether the objects look like a cylinder from left to right (e.g., rolls). This is to ensure the voting target is unambiguous.
+- **regress_right**: Whether to predict the right axis. Some symmetric objects only have a up axis well defined (e.g., bowls, bottles), while some do not (e.g., laptops, mugs).
+- **z_right**: Whether the objects are placed such that the right axis is [0, 0, 1] (default: [1, 0, 0]).
+</details>
+<details>
+<summary><b>Voting Statistics Generation</b></summary>
+
+Next, we need to know the ``scale_range`` (used for data augmentation, control possible object scales along the diagonal), ``vote_range`` (the range for center voting targets $\mu,\nu$), and ``scale_mean`` (the average 3D scale, used for scale voting). To generate them, you may refer to ``gen_stats.py``.
+</details>
+
+<details>
+<summary><b>Write Configuration Files and Train</b></summary>
+
+After you prepare the necessary configurations and voting statistics, you can write your own configuration file similar to that in ``config/category``, and then run ``train.py``.
+</details>
 
 # Citation
 ```
