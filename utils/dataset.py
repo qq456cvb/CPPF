@@ -236,8 +236,11 @@ class ShapeNetDataset(torch.utils.data.Dataset):
                 real2prob(targets_rot[:, 0], np.pi, self.cfg.rot_num_bins, circular=False),
                 real2prob(targets_rot[:, 1], np.pi, self.cfg.rot_num_bins, circular=False),
             ], 1)
-                
-        targets_scale = np.log(((bounds[1] - bounds[0]) / 2).astype(np.float32) * scale) - np.log(np.array(self.cfg.scale_mean))
+        
+        # adjust for nocs coordinate
+        bound = bounds[1] - bounds[0]
+        bound[[0, 2]] = bound[[2, 0]]
+        targets_scale = np.log((bound / 2).astype(np.float32) * scale) - np.log(np.array(self.cfg.scale_mean))
         
         return pc.astype(np.float32), normals, targets_tr, targets_rot, targets_rot_aux, targets_scale.astype(np.float32), point_idxs
         
