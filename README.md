@@ -31,6 +31,10 @@ CVPR 2022
 
 # News
 - **[2022.03]** Our another Detection-by-Voting method [Canonical Voting](https://github.com/qq456cvb/CanonicalVoting), which achieves SoTA on ScanNet, SceneNN, SUN RGB-D is accepted to CVPR 2022.
+
+# Change Logs
+- [2022.05.05] Fix a problem in scale target computing.
+
 # Contents
 - [Overview](#overview)
 - [Installation](#installation)
