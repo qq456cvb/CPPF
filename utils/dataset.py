@@ -10,6 +10,11 @@ import hydra
 import MinkowskiEngine as ME
 from scipy.spatial.transform import Rotation as R
 import OpenEXR
+import logging
+logger = logging.getLogger("OpenGL.arrays.arraydatatype")
+logger.setLevel(logging.ERROR)
+logger = logging.getLogger('OpenGL.acceleratesupport')
+logger.setLevel(logging.ERROR)
     
 
 def generate_target(pc, pc_normal, up_sym=False, right_sym=False, z_right=False, subsample=200000):
