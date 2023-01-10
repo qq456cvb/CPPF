@@ -18,11 +18,13 @@ ppf_kernel = cp.RawKernel(r'''
             float3 a = make_float3(points[a_idx * 3], points[a_idx * 3 + 1], points[a_idx * 3 + 2]);
             float3 b = make_float3(points[b_idx * 3], points[b_idx * 3 + 1], points[b_idx * 3 + 2]);
             float3 ab = a - b;
+            if (length(ab) < 1e-7) return;
             ab /= (length(ab) + 1e-7);
             float3 c = a - ab * proj_len;
 
             float prob = max(probs[a_idx], probs[b_idx]);
             float3 co = make_float3(0.f, -ab.z, ab.y);
+            if (length(co) < 1e-7) co = make_float3(-ab.y, ab.x, 0.f);
             float3 x = co / (length(co) + 1e-7) * odist;
             float3 y = cross(x, ab);
             int adaptive_n_rots = n_rots;
@@ -82,10 +84,12 @@ backvote_kernel = cp.RawKernel(r'''
             float3 a = make_float3(points[a_idx * 3], points[a_idx * 3 + 1], points[a_idx * 3 + 2]);
             float3 b = make_float3(points[b_idx * 3], points[b_idx * 3 + 1], points[b_idx * 3 + 2]);
             float3 ab = a - b;
+            if (length(ab) < 1e-7) return;
             ab /= (length(ab) + 1e-7);
             float3 c = a - ab * proj_len;
 
             float3 co = make_float3(0.f, -ab.z, ab.y);
+            if (length(co) < 1e-7) co = make_float3(-ab.y, ab.x, 0.f);
             float3 x = co / (length(co) + 1e-7) * odist;
             float3 y = cross(x, ab);
             
@@ -126,18 +130,20 @@ rot_voting_kernel = cp.RawKernel(r'''
             float3 a = make_float3(points[a_idx * 3], points[a_idx * 3 + 1], points[a_idx * 3 + 2]);
             float3 b = make_float3(points[b_idx * 3], points[b_idx * 3 + 1], points[b_idx * 3 + 2]);
             float3 ab = a - b;
+            if (length(ab) < 1e-7) return;
             ab /= (length(ab) + 1e-7);
             float3 c = a - ab * proj_len;
 
             float3 co = make_float3(0.f, -ab.z, ab.y);
+            if (length(co) < 1e-7) co = make_float3(-ab.y, ab.x, 0.f);
             float3 x = co / (length(co) + 1e-7) * odist;
             float3 y = cross(x, ab);
             
             for (int i = 0; i < n_rots; i++) {
                 float angle = i * 2 * M_PI / n_rots;
                 float3 offset = cos(angle) * x + sin(angle) * y;
-                float3 ax = offset / (length(offset) + 1e-7);
-                float3 up = cos(rot) * ab + sin(rot) * ax;
+                float3 up = tan(rot) * offset + (tan(rot) > 0 ? ab : -ab);
+                up = up / (length(up) + 1e-7);
                 outputs_up[idx * n_rots + i] = up;
             }
         }
