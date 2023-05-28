@@ -117,14 +117,12 @@ rot_voting_kernel = cp.RawKernel(r'''
     #define M_PI 3.14159265358979323846264338327950288
     extern "C" __global__
     void rot_voting(
-        const float *points, const float *outputs, const float *outputs_rot, float3 *outputs_up, const int *point_idxs, const float *corner, const float res,
+        const float *points, const float *not_used, const float *preds_rot, float3 *outputs_up, const int *point_idxs, const float *corner, const float res,
         int n_ppfs, int n_rots, int grid_x, int grid_y, int grid_z
     ) {
         const int idx = blockIdx.x * blockDim.x + threadIdx.x;
         if (idx < n_ppfs) {
-            float proj_len = outputs[idx * 2];
-            float odist = outputs[idx * 2 + 1];
-            float rot = outputs_rot[idx];
+            float rot = preds_rot[idx];
             int a_idx = point_idxs[idx * 2];
             int b_idx = point_idxs[idx * 2 + 1];
             float3 a = make_float3(points[a_idx * 3], points[a_idx * 3 + 1], points[a_idx * 3 + 2]);
@@ -132,11 +130,10 @@ rot_voting_kernel = cp.RawKernel(r'''
             float3 ab = a - b;
             if (length(ab) < 1e-7) return;
             ab /= (length(ab) + 1e-7);
-            float3 c = a - ab * proj_len;
 
             float3 co = make_float3(0.f, -ab.z, ab.y);
             if (length(co) < 1e-7) co = make_float3(-ab.y, ab.x, 0.f);
-            float3 x = co / (length(co) + 1e-7) * odist;
+            float3 x = co / (length(co) + 1e-7);
             float3 y = cross(x, ab);
             
             for (int i = 0; i < n_rots; i++) {
