@@ -8,7 +8,7 @@ CPPF: Towards Robust Category-Level 9D Pose Estimation in the Wild
 
 <div align="center">
 <h3>
-<a href="https://qq456cvb.github.io">Yang You</a>, Ruoxi Shi, Weiming Wang, Cewu Lu
+<a href="https://qq456cvb.github.io">Yang You</a>, <a href="https://rshi.top/">Ruoxi Shi</a>, Weiming Wang, <a href="https://www.mvig.org/">Cewu Lu</a>
 <br>
 <br>
 CVPR 2022
