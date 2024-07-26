@@ -30,6 +30,7 @@ CVPR 2022
   CPPF is a pure sim-to-real method that achieves 9D pose estimation in the wild. Our model is trained solely on ShapeNet synthetic models (without any real-world background pasting), and could be directly applied to real-world scenarios (i.e., NOCS REAL275, SUN RGB-D, etc.). CPPF achieves the goal by using only local $SE3$-invariant geometric features, and leverages a bottom-up voting scheme, which is quite different from previous end-to-end learning methods. Our model is robust to noise, and can obtain decent predictions even if only bounding box masks are provided.
 
 # News
+- **[2024.07]** Check our new object pose estimation benchmark **[PACE](https://github.com/qq456cvb/PACE)** on *ECCV 2024*.
 - **[2024.04]** Check our [CPPF++](https://github.com/qq456cvb/CPPF2) (TPAMI) for even **better results in the wild**!
 - ![cppf++](https://github.com/qq456cvb/CPPF2/blob/main/teaser.gif)
 - **[2022.03]** Our another Detection-by-Voting method [Canonical Voting](https://github.com/qq456cvb/CanonicalVoting), which achieves SoTA on ScanNet, SceneNN, SUN RGB-D is accepted to CVPR 2022.
