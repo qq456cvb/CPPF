@@ -264,9 +264,9 @@ class BlenderLaptopAuxDataset(torch.utils.data.Dataset):
         self.intrinsics = np.array([[591.0125, 0, 322.525], [0, 590.16775, 244.11084], [0, 0, 1]])
         
         self.model_names = []
-        blacklists = open(hydra.utils.to_absolute_path('data/laptop_nonreal.txt')).read().splitlines()
+        bad_shapes = open(hydra.utils.to_absolute_path('data/laptop_nonreal.txt')).read().splitlines()
         for name in model_names:
-            if name not in blacklists:
+            if name not in bad_shapes:
                 self.model_names.append(name)
             
         self.camera_lens = 29.55062484741211
