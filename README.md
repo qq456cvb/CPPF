@@ -29,6 +29,19 @@ CVPR 2022
  
   CPPF is a pure sim-to-real method that achieves 9D pose estimation in the wild. Our model is trained solely on ShapeNet synthetic models (without any real-world background pasting), and could be directly applied to real-world scenarios (i.e., NOCS REAL275, SUN RGB-D, etc.). CPPF achieves the goal by using only local $SE3$-invariant geometric features, and leverages a bottom-up voting scheme, which is quite different from previous end-to-end learning methods. Our model is robust to noise, and can obtain decent predictions even if only bounding box masks are provided.
 
+<!-- README refined by Cursor -->
+
+## Data and Artifact Mirrors
+
+No verified Hugging Face mirror is available yet for the artifacts below; use the original sources until a complete mirror is uploaded.
+
+Original, external, or pending sources:
+- Laptop auxiliary rendered images: [https://drive.google.com/file/d/1gRHGt47nP9arDAu3hwnDNgfwJMxJYtCa/view?usp=sharing](https://drive.google.com/file/d/1gRHGt47nP9arDAu3hwnDNgfwJMxJYtCa/view?usp=sharing). Hugging Face mirror is pending because the source did not expose a retrievable public file URL during this cleanup.
+- Pretrained models: [https://drive.google.com/drive/folders/11wm5WHDjmSBfhng6emxCBBYZexmLoxLk?usp=sharing](https://drive.google.com/drive/folders/11wm5WHDjmSBfhng6emxCBBYZexmLoxLk?usp=sharing). Hugging Face mirror is pending because the source did not expose a retrievable public file URL during this cleanup.
+- NOCS detection priors: [https://drive.google.com/file/d/1cvGiXG_2ya8CMHss1IDobdL81qeODOrE/view?usp=sharing](https://drive.google.com/file/d/1cvGiXG_2ya8CMHss1IDobdL81qeODOrE/view?usp=sharing). Hugging Face mirror is pending because the source did not expose a retrievable public file URL during this cleanup.
+- SUN RGB-D extra files: [https://drive.google.com/drive/folders/1FSn8j2wIq1VDm5FQNBKuKZ5Wx2G0Ox0S?usp=sharing](https://drive.google.com/drive/folders/1FSn8j2wIq1VDm5FQNBKuKZ5Wx2G0Ox0S?usp=sharing). Hugging Face mirror is pending because the source did not expose a retrievable public file URL during this cleanup.
+- NOCS REAL275: [http://download.cs.stanford.edu/orion/nocs/real_test.zip](http://download.cs.stanford.edu/orion/nocs/real_test.zip). third-party benchmark dataset; kept as official source
+
 # News
 - **[2024.07]** Check our new object pose estimation benchmark **[PACE](https://github.com/qq456cvb/PACE)** on *ECCV 2024*.
 - **[2024.04]** Check our [CPPF++](https://github.com/qq456cvb/CPPF2) (TPAMI) for even **better results in the wild**!
