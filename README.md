@@ -32,7 +32,7 @@ CVPR 2022
 # News
 - **[2024.07]** Check our new object pose estimation benchmark **[PACE](https://github.com/qq456cvb/PACE)** on *ECCV 2024*.
 - **[2024.04]** Check our [CPPF++](https://github.com/qq456cvb/CPPF2) (TPAMI) for even **better results in the wild**!
-- ![cppf++](https://github.com/qq456cvb/CPPF2/blob/main/teaser.gif)
+- ![cppf++](https://github.com/qq456cvb/CPPF2/blob/main/teaser.gif?raw=true)
 - **[2022.03]** Our another Detection-by-Voting method [Canonical Voting](https://github.com/qq456cvb/CanonicalVoting), which achieves SoTA on ScanNet, SceneNN, SUN RGB-D is accepted to CVPR 2022.
 
 # Change Logs
