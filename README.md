@@ -14,8 +14,8 @@ CPPF: Towards Robust Category-Level 9D Pose Estimation in the Wild
 CVPR 2022
 <br>
 <br>
-<a href='https://arxiv.org/pdf/2203.03089.pdf'>
-  <img src='https://img.shields.io/badge/Paper-PDF-orange?style=flat&logo=arxiv&logoColor=orange' alt='Paper PDF'>
+<a href='https://openaccess.thecvf.com/content/CVPR2022/papers/You_CPPF_Towards_Robust_Category-Level_9D_Pose_Estimation_in_the_Wild_CVPR_2022_paper.pdf'>
+  <img src='https://img.shields.io/badge/Paper-CVPR%202022-orange?style=flat' alt='Paper PDF'>
 </a>
 <a href='https://qq456cvb.github.io/projects/cppf'>
   <img src='https://img.shields.io/badge/Project-Page-green?style=flat&logo=googlechrome&logoColor=green' alt='Project Page'>
@@ -28,19 +28,6 @@ CVPR 2022
 </div>
  
   CPPF is a pure sim-to-real method that achieves 9D pose estimation in the wild. Our model is trained solely on ShapeNet synthetic models (without any real-world background pasting), and could be directly applied to real-world scenarios (i.e., NOCS REAL275, SUN RGB-D, etc.). CPPF achieves the goal by using only local $SE3$-invariant geometric features, and leverages a bottom-up voting scheme, which is quite different from previous end-to-end learning methods. Our model is robust to noise, and can obtain decent predictions even if only bounding box masks are provided.
-
-<!-- README refined by Cursor -->
-
-## Data and Artifact Mirrors
-
-No verified Hugging Face mirror is available yet for the artifacts below; use the original sources until a complete mirror is uploaded.
-
-Original, external, or pending sources:
-- Laptop auxiliary rendered images: [https://drive.google.com/file/d/1gRHGt47nP9arDAu3hwnDNgfwJMxJYtCa/view?usp=sharing](https://drive.google.com/file/d/1gRHGt47nP9arDAu3hwnDNgfwJMxJYtCa/view?usp=sharing). Hugging Face mirror is pending because the source did not expose a retrievable public file URL during this cleanup.
-- Pretrained models: [https://drive.google.com/drive/folders/11wm5WHDjmSBfhng6emxCBBYZexmLoxLk?usp=sharing](https://drive.google.com/drive/folders/11wm5WHDjmSBfhng6emxCBBYZexmLoxLk?usp=sharing). Hugging Face mirror is pending because the source did not expose a retrievable public file URL during this cleanup.
-- NOCS detection priors: [https://drive.google.com/file/d/1cvGiXG_2ya8CMHss1IDobdL81qeODOrE/view?usp=sharing](https://drive.google.com/file/d/1cvGiXG_2ya8CMHss1IDobdL81qeODOrE/view?usp=sharing). Hugging Face mirror is pending because the source did not expose a retrievable public file URL during this cleanup.
-- SUN RGB-D extra files: [https://drive.google.com/drive/folders/1FSn8j2wIq1VDm5FQNBKuKZ5Wx2G0Ox0S?usp=sharing](https://drive.google.com/drive/folders/1FSn8j2wIq1VDm5FQNBKuKZ5Wx2G0Ox0S?usp=sharing). Hugging Face mirror is pending because the source did not expose a retrievable public file URL during this cleanup.
-- NOCS REAL275: [http://download.cs.stanford.edu/orion/nocs/real_test.zip](http://download.cs.stanford.edu/orion/nocs/real_test.zip). third-party benchmark dataset; kept as official source
 
 # News
 - **[2024.07]** Check our new object pose estimation benchmark **[PACE](https://github.com/qq456cvb/PACE)** on *ECCV 2024*.
@@ -132,7 +119,7 @@ python train.py category=bathtub,bed,bookshelf,chair,sofa,table -m
 
 For Laptops, geometry alone cannot determine the pose unambiguously, we rely on an auxiliary segmentation network that segments out the lid and the keyboard base.
 
-To train the segmenter network, first download our Blender physically rendered laptop images from [Google Drive](https://drive.google.com/file/d/1gRHGt47nP9arDAu3hwnDNgfwJMxJYtCa/view?usp=sharing) and place it under ``data/laptop``. Then run the following command:
+To train the segmenter network, first download our Blender physically rendered laptop images (``laptop.zip``) from [Hugging Face](https://huggingface.co/datasets/qq456cvb/CPPF) and extract it under ``data/laptop``. Then run the following command:
 ```
 python train_laptop_aux.py
 ```
@@ -140,13 +127,16 @@ python train_laptop_aux.py
 
 
 # Pretrained Models
-Pretrained models for various ShapeNet categories can be downloaded from [Google Drive](https://drive.google.com/drive/folders/11wm5WHDjmSBfhng6emxCBBYZexmLoxLk?usp=sharing).
+Pretrained models for various ShapeNet categories are hosted on [Hugging Face](https://huggingface.co/qq456cvb/CPPF):
+```
+hf download qq456cvb/CPPF --local-dir checkpoints
+```
 # Test on NOCS REAL275
 
 <details>
 <summary><b>Data Preparation</b></summary>
 
-First download the detection priors from [Google Drive](https://drive.google.com/file/d/1cvGiXG_2ya8CMHss1IDobdL81qeODOrE/view?usp=sharing), which is used for evaluation with instance segmentation or bounding box masks. Put the directory under ``data/nocs_seg``.
+First download the detection priors (``nocs_seg.zip``) from [Hugging Face](https://huggingface.co/datasets/qq456cvb/CPPF), which is used for evaluation with instance segmentation or bounding box masks. Extract the directory under ``data/nocs_seg``.
 
 Then download RGB-D images from [NOCS REAL275](http://download.cs.stanford.edu/orion/nocs/real_test.zip) dataset and put it under ``data/nocs``.
 
@@ -194,7 +184,7 @@ For this task, due to the memory limitation, we use the regression-based network
 
 We follow the same data preparation process as in [VoteNet](https://github.com/facebookresearch/votenet/blob/main/sunrgbd/README.md). You need to first download [SUNRGBD v2 data](http://rgbd.cs.princeton.edu/data/) (``SUNRGBD.zip``, ``SUNRGBDMeta2DBB_v2.mat``, ``SUNRGBDMeta3DBB_v2.mat``) and the toolkits (``SUNRGBDtoolbox.zip``). Move all the downloaded files under ``data/OFFICIAL_SUNRGBD``. Unzip the zip files.
 
-Download the prepared extra data for SUN RGB-D from [Google Drive](https://drive.google.com/drive/folders/1FSn8j2wIq1VDm5FQNBKuKZ5Wx2G0Ox0S?usp=sharing), and move it under ``data/sunrgbd_extra``. Unzip the zip files.
+Download the prepared extra data for SUN RGB-D (``sunrgbd_extra/``) from [Hugging Face](https://huggingface.co/datasets/qq456cvb/CPPF), and move it under ``data/sunrgbd_extra``. Unzip the zip files.
 </details>
 
 <details>
