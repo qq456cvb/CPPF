@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this code or data in your research, please cite the paper below."
+title: "CPPF: Towards Robust Category-Level 9D Pose Estimation in the Wild"
+authors:
+  - family-names: "You"
+    given-names: "Yang"
+    orcid: "https://orcid.org/0000-0003-0125-0792"
+  - family-names: "Shi"
+    given-names: "Ruoxi"
+  - family-names: "Wang"
+    given-names: "Weiming"
+  - family-names: "Lu"
+    given-names: "Cewu"
+repository-code: "https://github.com/qq456cvb/CPPF"
+url: "https://qq456cvb.github.io/projects/cppf"
+preferred-citation:
+  type: conference-paper
+  title: "CPPF: Towards Robust Category-Level 9D Pose Estimation in the Wild"
+  authors:
+    - family-names: "You"
+      given-names: "Yang"
+      orcid: "https://orcid.org/0000-0003-0125-0792"
+    - family-names: "Shi"
+      given-names: "Ruoxi"
+    - family-names: "Wang"
+      given-names: "Weiming"
+    - family-names: "Lu"
+      given-names: "Cewu"
+  collection-title: "Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)"
+  conference:
+    name: "CVPR 2022"
+  year: 2022
+  url: "https://arxiv.org/abs/2203.03089"
+  identifiers:
+    - type: other
+      value: "arXiv:2203.03089"
+      description: "arXiv preprint"
